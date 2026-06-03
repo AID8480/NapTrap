@@ -1,0 +1,54 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', Inter, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root { min-height: 100vh; }
+}
+
+@layer utilities {
+  /* ── Clay shadow system ─────────────────────────────────── */
+  .clay-shadow {
+    box-shadow:
+      inset 0 2px 4px rgba(255,255,255,0.65),
+      inset 0 -2px 4px rgba(0,0,0,0.07),
+      0 8px 24px rgba(0,0,0,0.10),
+      0 2px 6px rgba(0,0,0,0.07);
+  }
+  .clay-shadow-lg {
+    box-shadow:
+      inset 0 3px 6px rgba(255,255,255,0.70),
+      inset 0 -3px 6px rgba(0,0,0,0.09),
+      0 16px 40px rgba(0,0,0,0.14),
+      0 4px 12px rgba(0,0,0,0.09);
+  }
+  .clay-shadow-btn {
+    box-shadow:
+      inset 0 2px 3px rgba(255,255,255,0.60),
+      inset 0 -2px 3px rgba(0,0,0,0.12),
+      0 4px 12px rgba(0,0,0,0.12),
+      0 1px 3px rgba(0,0,0,0.08);
+  }
+  .clay-shadow-btn:active {
+    box-shadow:
+      inset 0 2px 4px rgba(0,0,0,0.15),
+      inset 0 -1px 2px rgba(255,255,255,0.40),
+      0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  /* ── Card hover lift ────────────────────────────────────── */
+  .clay-card {
+    @apply rounded-3xl clay-shadow transition-all duration-200 cursor-default;
+  }
+  .clay-card:hover {
+    @apply -translate-y-1 clay-shadow-lg;
+  }
+}
