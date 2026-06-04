@@ -32,7 +32,8 @@ async def preview_baseline(
     contents = await file.read()
     try:
         return service.preview_rr_file(contents)
-    except ValueError as e:
+    except Exception as e:
+        print(f"[baseline/preview] parse error: {type(e).__name__}: {e}")
         raise HTTPException(status_code=422, detail=str(e))
 
 
@@ -48,7 +49,8 @@ async def upload_baseline(
     contents = await file.read()
     try:
         preview = service.preview_rr_file(contents)
-    except ValueError as e:
+    except Exception as e:
+        print(f"[baseline/upload] parse error: {type(e).__name__}: {e}")
         raise HTTPException(status_code=422, detail=str(e))
 
     baseline = await service.save_baseline(current_user.id, preview.rmssd_value, method, db)
