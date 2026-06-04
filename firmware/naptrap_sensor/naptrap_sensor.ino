@@ -13,7 +13,7 @@
  */
 
 #include <WiFi.h>
-#include <WebSocketsClient.h>
+#include <WebSocketsClientSecure.h>
 #include <ArduinoJson.h>
 #include "MAX30105.h"
 #include "heartRate.h"   // SparkFun beat-detection helper
@@ -22,15 +22,15 @@
 const char* WIFI_SSID     = "Sshrf";
 const char* WIFI_PASSWORD = "hj919123";
 
-// WebSocket server  (no trailing slash, no "ws://")
-const char* WS_HOST = "192.168.1.195";
-const uint16_t WS_PORT = 8000;
+// WebSocket server  (no trailing slash, no "wss://")
+const char* WS_HOST = "naptrap-production.up.railway.app";
+const uint16_t WS_PORT = 443;
 // Path must include the user_id recognised by the backend
 const char* WS_PATH = "/ws/sensor/53fa9a8b-ce82-47f7-8f16-cf87a4ca9597";
 // ────────────────────────────────────────────────────────────────────────────
 
 MAX30105      particleSensor;
-WebSocketsClient ws;
+WebSocketsClientSecure ws;
 
 // Beat-detection ring buffer (SparkFun algorithm)
 const byte    RATE_SIZE = 4;
@@ -71,6 +71,7 @@ void setup() {
   // ── WiFi + WebSocket ──
   connectWiFi();
 
+  ws.setInsecure();   // skip CA verification — Railway cert is valid but ESP32 has no root store
   ws.begin(WS_HOST, WS_PORT, WS_PATH);
   ws.onEvent(wsEventHandler);
   ws.setReconnectInterval(3000);
@@ -153,7 +154,7 @@ void wsEventHandler(WStype_t type, uint8_t* payload, size_t length) {
   switch (type) {
     case WStype_CONNECTED:
       wsConnected = true;
-      Serial.printf("[WS] Connected to ws://%s:%d%s\n", WS_HOST, WS_PORT, WS_PATH);
+      Serial.printf("[WS] Connected to wss://%s:%d%s\n", WS_HOST, WS_PORT, WS_PATH);
       break;
 
     case WStype_DISCONNECTED:
