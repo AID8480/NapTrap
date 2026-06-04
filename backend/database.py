@@ -5,9 +5,13 @@ from sqlalchemy.orm import DeclarativeBase
 
 from backend.config import settings
 
-_is_sqlite = settings.DATABASE_URL.startswith("sqlite")
+_db_url = settings.DATABASE_URL
+if _db_url.startswith("postgresql://"):
+    _db_url = _db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+_is_sqlite = _db_url.startswith("sqlite")
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    _db_url,
     echo=False,
     **({} if _is_sqlite else {"pool_pre_ping": True}),
 )
