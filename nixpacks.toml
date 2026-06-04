@@ -5,7 +5,7 @@ nixPkgs = ["python311", "python311Packages.pip", "jdk17"]
 cmds = [
   "python3.11 -m venv /app/venv",
   "/app/venv/bin/pip install -r requirements.txt",
-  "javac -d /app /app/HRVCalculator.java"
+  "javac --release 17 -d /app /app/HRVCalculator.java"
 ]
 
 [start]

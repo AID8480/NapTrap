@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from "react";
 import type { FatigueLevel } from "../store/sessionStore";
 import { useSessionStore } from "../store/sessionStore";
 
-const WS_BASE = import.meta.env.VITE_WS_URL ?? `ws://${window.location.host}`;
+const WS_BASE = import.meta.env.VITE_WS_URL ?? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
 
 export function useWebSocket(userId: string | null, demo: boolean, hasBaseline: boolean) {
   const wsRef = useRef<WebSocket | null>(null);

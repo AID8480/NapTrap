@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../hooks/useAuth";
 
-const WS_BASE = import.meta.env.VITE_WS_URL ?? `ws://${window.location.host}`;
+const WS_BASE = import.meta.env.VITE_WS_URL ?? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
 const MAX_RR_HISTORY = 20;
 const MIN_RR = 300;
 const MAX_RR = 2000;

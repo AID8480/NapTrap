@@ -5,7 +5,7 @@ import { useAuth } from "../../hooks/useAuth";
 
 const MEASURE_DURATION = 300; // 5 minutes in seconds
 const WS_BASE = typeof window !== "undefined"
-  ? `ws://${window.location.host}`
+  ? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`
   : "ws://localhost:8000";
 
 interface Props { onClose: () => void; }
