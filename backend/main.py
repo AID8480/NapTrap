@@ -45,8 +45,14 @@ async def health():
 
 
 # Serve React frontend static assets
-_frontend_dist = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "frontend", "dist")
-app.mount("/assets", StaticFiles(directory=os.path.join(_frontend_dist, "assets")), name="assets")
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DIST_DIR = os.path.join(BASE_DIR, "frontend", "dist")
+ASSETS_DIR = os.path.join(DIST_DIR, "assets")
+
+print(f"[startup] DIST_DIR={DIST_DIR} exists={os.path.isdir(DIST_DIR)}")
+print(f"[startup] ASSETS_DIR={ASSETS_DIR} exists={os.path.isdir(ASSETS_DIR)}")
+
+app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
 
 
 # SPA catch-all — must be after all API routes
@@ -54,4 +60,4 @@ app.mount("/assets", StaticFiles(directory=os.path.join(_frontend_dist, "assets"
 async def serve_spa(full_path: str):
     if full_path.startswith("ws/"):
         raise HTTPException(status_code=404)
-    return FileResponse(Path(_frontend_dist) / "index.html")
+    return FileResponse(Path(DIST_DIR) / "index.html")

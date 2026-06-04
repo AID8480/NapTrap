@@ -17,7 +17,7 @@ export function useWebSocket(userId: string | null, demo: boolean, hasBaseline: 
     const ws = new WebSocket(`${WS_BASE}${path}`);
     wsRef.current = ws;
 
-    ws.onopen = () => { store.setConnected(true); store.setSensorConnected(null); };
+    ws.onopen = () => { store.setConnected(true); };
     ws.onclose = () => { store.setConnected(false); wsRef.current = null; };
 
     ws.onmessage = (evt) => {
