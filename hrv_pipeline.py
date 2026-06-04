@@ -45,7 +45,7 @@ RR_MIN_MS = 300.0   # minimum valid RR interval (200 BPM)
 RR_MAX_MS = 2000.0  # maximum valid RR interval (30 BPM)
 
 JAVA_CLASS   = "HRVCalculator"
-JAVA_DIR     = os.path.dirname(os.path.abspath(__file__))  # same dir as this script
+JAVA_DIR     = os.environ.get("JAVA_DIR") or os.path.dirname(os.path.abspath(__file__))
 
 FATIGUE_THRESHOLDS = [0.10, 0.25, 0.40]   # drop ratios for levels 1, 2, 3
 FATIGUE_COLORS     = ["#2ecc71", "#f1c40f", "#e67e22", "#e74c3c"]
@@ -118,8 +118,15 @@ def batch_java_rmssd(windows) -> np.ndarray:
         input=stdin_data,
         capture_output=True,
         text=True,
-        check=True,
+        check=False,
     )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"Java RMSSD failed (exit {result.returncode})\n"
+            f"  classpath: {JAVA_DIR}\n"
+            f"  stderr: {result.stderr.strip()}\n"
+            f"  stdout: {result.stdout.strip()}"
+        )
     rmssds = []
     for line in result.stdout.strip().splitlines():
         line = line.strip()
