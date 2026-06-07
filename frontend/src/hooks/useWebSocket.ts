@@ -4,7 +4,7 @@ import { useSessionStore } from "../store/sessionStore";
 
 const WS_BASE = import.meta.env.VITE_WS_URL ?? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
 
-export function useWebSocket(userId: string | null, demo: boolean, hasBaseline: boolean) {
+export function useWebSocket(userId: string | null, demo: boolean, hasBaseline: boolean, token: string | null) {
   const wsRef = useRef<WebSocket | null>(null);
   const prevDemoRef = useRef<boolean>(demo);
   const ignoringRef = useRef<boolean>(false);
@@ -13,7 +13,7 @@ export function useWebSocket(userId: string | null, demo: boolean, hasBaseline: 
   const connect = useCallback(() => {
     if (!userId) return;
     ignoringRef.current = false;
-    const path = demo ? `/ws/demo/${userId}` : `/ws/sensor/${userId}`;
+    const path = demo ? `/ws/demo/${userId}` : `/ws/browser/${userId}?token=${encodeURIComponent(token ?? "")}`;
     const ws = new WebSocket(`${WS_BASE}${path}`);
     wsRef.current = ws;
 
@@ -55,7 +55,7 @@ export function useWebSocket(userId: string | null, demo: boolean, hasBaseline: 
           break;
       }
     };
-  }, [userId, demo, hasBaseline]);
+  }, [userId, demo, hasBaseline, token]);
 
   const sendAck = useCallback(() => {
     wsRef.current?.send(JSON.stringify({ type: "driving_ack" }));
@@ -80,7 +80,7 @@ export function useWebSocket(userId: string | null, demo: boolean, hasBaseline: 
       wsRef.current = null;
       store.reset();
     };
-  }, [userId, demo, hasBaseline]);
+  }, [userId, demo, hasBaseline, token]);
 
   return { sendAck, sendDismiss };
 }

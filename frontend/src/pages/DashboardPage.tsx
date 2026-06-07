@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 
 export function DashboardPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, token } = useAuth();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const demo = params.get("demo") === "true";
@@ -24,7 +24,7 @@ export function DashboardPage() {
 
   useEffect(() => { setDemoMode(demo); }, [demo]);
 
-  const { sendAck, sendDismiss } = useWebSocket(user?.id ?? null, demo, hasBaseline === true);
+  const { sendAck, sendDismiss } = useWebSocket(user?.id ?? null, demo, hasBaseline === true, token);
 
   const toggleDemo = () => {
     if (demo) {

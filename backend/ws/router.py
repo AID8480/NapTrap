@@ -2,9 +2,10 @@ import asyncio
 import time
 import uuid
 
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.auth.service import decode_token
 from backend.database import AsyncSessionLocal
 from backend.models import GPSData, RRData
 from backend.session import service as session_service
@@ -54,18 +55,19 @@ async def _finalize(buffer: SessionBuffer) -> None:
         )
 
 
-async def _process_message(raw: dict, buffer: SessionBuffer, ws: WebSocket) -> None:
+async def _process_message(raw: dict, buffer: SessionBuffer) -> None:
+    """Handle a message from the ESP32; responses go to the browser connection."""
     msg_type = raw.get("type")
 
     if msg_type == "rr":
         value = float(raw.get("value", 0))
         timestamp = int(raw.get("timestamp", 0))
 
-        # Notify frontend on first RR packet (sensor physically connected)
+        # Notify browser on first RR packet (sensor physically connected)
         if not buffer.sensor_connected:
             buffer.sensor_connected = True
             sensor_model = raw.get("sensor_model") or None
-            await ws.send_json({
+            await manager.send_to_browser(buffer.user_id, {
                 "type": "sensor_connected",
                 "sensor_model": sensor_model,
             })
@@ -83,12 +85,12 @@ async def _process_message(raw: dict, buffer: SessionBuffer, ws: WebSocket) -> N
             asyncio.create_task(_persist_rr(buffer.session_id, value, timestamp))
 
         if hrv_update:
-            await ws.send_json(hrv_update)
+            await manager.send_to_browser(buffer.user_id, hrv_update)
 
             # Fire alert if fatigue >= 2 and driving confirmed
             if hrv_update["fatigue"] >= 2 and buffer.driving_confirmed:
                 buffer.alert_count += 1
-                await ws.send_json({
+                await manager.send_to_browser(buffer.user_id, {
                     "type": "alert",
                     "fatigue_level": hrv_update["fatigue"],
                     "timestamp": timestamp,
@@ -101,28 +103,19 @@ async def _process_message(raw: dict, buffer: SessionBuffer, ws: WebSocket) -> N
 
     elif msg_type == "gps":
         gps_update = pipeline_runner.handle_gps(buffer, raw)
-        await ws.send_json(gps_update)
+        await manager.send_to_browser(buffer.user_id, gps_update)
 
         if buffer.driving_confirmed and buffer.session_id:
             asyncio.create_task(_persist_gps(buffer.session_id, raw))
 
-        # Notify frontend to show driving detection popup
+        # Notify browser to show driving detection popup
         if gps_update["driving_detected"] and not buffer.driving_confirmed:
-            await ws.send_json({"type": "driving_detected"})
-
-    elif msg_type == "driving_ack":
-        # User confirmed driving — start full monitoring
-        buffer.driving_confirmed = True
-        await ws.send_json({"type": "monitoring_started"})
-
-    elif msg_type == "driving_dismiss":
-        # User dismissed popup — suppress re-trigger for 5 minutes
-        buffer.driving_dismissed_until = int(time.time() * 1000) + 5 * 60 * 1000
+            await manager.send_to_browser(buffer.user_id, {"type": "driving_detected"})
 
 
 @router.websocket("/ws/sensor/{user_id}")
 async def sensor_endpoint(user_id: str, ws: WebSocket):
-    await manager.connect(user_id, ws)
+    await manager.connect_hardware(user_id, ws)
     try:
         buffer = await _init_buffer(user_id)
     except Exception as e:
@@ -134,12 +127,39 @@ async def sensor_endpoint(user_id: str, ws: WebSocket):
     try:
         while True:
             raw = await ws.receive_json()
-            await _process_message(raw, buffer, ws)
+            await _process_message(raw, buffer)
     except WebSocketDisconnect:
         pass
     finally:
         await _finalize(buffer)
-        manager.disconnect(user_id)
+        manager.disconnect_hardware(user_id)
+
+
+@router.websocket("/ws/browser/{user_id}")
+async def browser_endpoint(user_id: str, ws: WebSocket, token: str = Query(...)):
+    """Browser dashboard connection — receives HRV/GPS/alert updates, sends driving_ack/dismiss."""
+    payload = decode_token(token)
+    token_user_id = payload.get("sub")
+    print(f"[WS/browser] token={token[:20]}... decoded_sub={token_user_id!r} user_id={user_id!r} match={token_user_id == user_id}")
+    if not token_user_id or token_user_id != user_id:
+        await ws.accept()
+        await ws.close(code=4001)
+        return
+    await manager.connect_browser(user_id, ws)
+    try:
+        while True:
+            raw = await ws.receive_json()
+            msg_type = raw.get("type")
+            buffer = manager.get_buffer(user_id)
+            if msg_type == "driving_ack" and buffer:
+                buffer.driving_confirmed = True
+                await ws.send_json({"type": "monitoring_started"})
+            elif msg_type == "driving_dismiss" and buffer:
+                buffer.driving_dismissed_until = int(time.time() * 1000) + 5 * 60 * 1000
+    except WebSocketDisconnect:
+        pass
+    finally:
+        manager.disconnect_browser(user_id)
 
 
 @router.websocket("/ws/test/{user_id}")
