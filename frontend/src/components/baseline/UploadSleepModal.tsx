@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { ClayButton } from "../ui/ClayButton";
 import { previewBaseline, uploadBaseline } from "../../api/baseline";
 import type { BaselinePreview } from "../../api/baseline";
+import { Moon, FolderOpen, CheckCircle } from "lucide-react";
 
 interface Props { onClose: () => void; }
 
@@ -54,13 +55,13 @@ export function UploadSleepModal({ onClose }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-white rounded-3xl clay-shadow-lg w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="font-bold text-gray-800 text-lg">😴 Upload Sleep Data</h3>
+          <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2"><Moon className="w-5 h-5 text-coral" /> Upload Sleep Data</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
         </div>
 
         {done ? (
           <div className="text-center py-6">
-            <div className="text-4xl mb-3">✅</div>
+            <div className="flex justify-center mb-3"><CheckCircle className="w-10 h-10 text-mint" /></div>
             <p className="font-semibold text-gray-700">Baseline saved!</p>
             <p className="text-sm text-gray-500 mt-1">RMSSD: {preview?.rmssd_value.toFixed(2)} ms</p>
             <ClayButton colorClass="bg-coral text-white mt-4" onClick={onClose}>Done</ClayButton>
@@ -76,7 +77,7 @@ export function UploadSleepModal({ onClose }: Props) {
                 dragging ? "border-coral bg-coral-light" : "border-gray-200 hover:border-coral/50"
               }`}
             >
-              <div className="text-3xl mb-2">📂</div>
+              <div className="flex justify-center mb-2"><FolderOpen className="w-8 h-8 text-gray-300" /></div>
               <p className="text-sm text-gray-600 font-medium">
                 {file ? file.name : "Drop .txt file here or click to browse"}
               </p>

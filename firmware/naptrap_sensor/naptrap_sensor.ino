@@ -13,24 +13,31 @@
  */
 
 #include <WiFi.h>
-#include <WebSocketsClientSecure.h>
+#include <WebSocketsClient.h>
 #include <ArduinoJson.h>
 #include "MAX30105.h"
 #include "heartRate.h"   // SparkFun beat-detection helper
 
 // ─── User config ────────────────────────────────────────────────────────────
-const char* WIFI_SSID     = "Sshrf";
-const char* WIFI_PASSWORD = "hj919123";
+struct WiFiCredential {
+  const char* ssid;
+  const char* password;
+};
+WiFiCredential networks[] = {
+  {"Sshrf", "hj919123"},
+  {"Edwin", "66666666"},
+};
+const int NETWORK_COUNT = sizeof(networks) / sizeof(networks[0]);
 
 // WebSocket server  (no trailing slash, no "wss://")
 const char* WS_HOST = "naptrap-production.up.railway.app";
 const uint16_t WS_PORT = 443;
 // Path must include the user_id recognised by the backend
-const char* WS_PATH = "/ws/sensor/53fa9a8b-ce82-47f7-8f16-cf87a4ca9597";
+const char* WS_PATH = "/ws/sensor/fae7c340-53f9-4d29-87e8-a54ebd6227d6";
 // ────────────────────────────────────────────────────────────────────────────
 
 MAX30105      particleSensor;
-WebSocketsClientSecure ws;
+WebSocketsClient ws;
 
 // Beat-detection ring buffer (SparkFun algorithm)
 const byte    RATE_SIZE = 4;
@@ -63,7 +70,7 @@ void setup() {
     while (true) { delay(500); }
   }
   particleSensor.setup();                   // default config
-  particleSensor.setPulseAmplitudeRed(0x0A);
+  particleSensor.setPulseAmplitudeRed(0x1F);
   particleSensor.setPulseAmplitudeGreen(0); // green LED off — saves power
 
   Serial.println("[MAX30102] Sensor ready.");
@@ -71,8 +78,7 @@ void setup() {
   // ── WiFi + WebSocket ──
   connectWiFi();
 
-  ws.setInsecure();   // skip CA verification — Railway cert is valid but ESP32 has no root store
-  ws.begin(WS_HOST, WS_PORT, WS_PATH);
+  ws.beginSSL(WS_HOST, WS_PORT, WS_PATH);
   ws.onEvent(wsEventHandler);
   ws.setReconnectInterval(3000);
   ws.enableHeartbeat(15000, 3000, 2); // ping every 15 s
@@ -177,21 +183,25 @@ void wsEventHandler(WStype_t type, uint8_t* payload, size_t length) {
 
 // ────────────────────────────────────────────────────────────────────────────
 void connectWiFi() {
-  Serial.print("Connecting to: ");
-  Serial.println(WIFI_SSID);
-  Serial.print("Password length: ");
-  Serial.println(strlen(WIFI_PASSWORD));
   WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-  int attempts = 0;
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-    if (++attempts > 40) {
-      Serial.println("\n[WiFi] Failed. Restarting...");
-      ESP.restart();
+  for (int i = 0; i < NETWORK_COUNT; i++) {
+    Serial.print("Trying: ");
+    Serial.println(networks[i].ssid);
+    WiFi.begin(networks[i].ssid, networks[i].password);
+    int attempts = 0;
+    while (WiFi.status() != WL_CONNECTED && attempts < 20) {
+      delay(500);
+      Serial.print(".");
+      attempts++;
     }
+    if (WiFi.status() == WL_CONNECTED) {
+      Serial.printf("\n[WiFi] Connected — IP: %s\n", WiFi.localIP().toString().c_str());
+      return;
+    }
+    Serial.println("\nFailed, trying next...");
+    WiFi.disconnect();
+    delay(500);
   }
-  Serial.printf("\n[WiFi] Connected — IP: %s\n", WiFi.localIP().toString().c_str());
+  Serial.println("[WiFi] All networks failed. Restarting...");
+  ESP.restart();
 }

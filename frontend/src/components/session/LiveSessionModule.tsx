@@ -4,6 +4,7 @@ import { ClayCard } from "../ui/ClayCard";
 import { AmbientBlobs } from "../layout/AmbientBlobs";
 import { FatigueRing } from "./FatigueRing";
 import { DrivingDetectionPopup } from "./DrivingDetectionPopup";
+import { Car, Radio } from "lucide-react";
 
 const FATIGUE_COLORS = ["#4ECDC4", "#FFE66D", "#FF6B6B", "#e74c3c"];
 const FATIGUE_LABELS = ["Fresh", "Mild fatigue", "Moderate fatigue", "Severe fatigue"];
@@ -31,7 +32,7 @@ export function LiveSessionModule({ onAck, onDismiss, hasBaseline = true }: Prop
       {/* Sensor connected toast */}
       {showSensorToast && (
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-white rounded-2xl clay-shadow px-5 py-3 flex items-center gap-3">
-          <span className="text-xl">🔗</span>
+          <Radio className="w-5 h-5 text-mint-dark" />
           <div>
             <div className="font-semibold text-gray-800 text-sm">Sensor Connected</div>
             {sensorModel && (
@@ -62,7 +63,7 @@ export function LiveSessionModule({ onAck, onDismiss, hasBaseline = true }: Prop
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <span className="text-xl">🚗</span>
+              <Car className="w-5 h-5 text-gray-700" />
               <h2 className="font-bold text-gray-800 text-lg">Live Session</h2>
             </div>
             <div className="flex items-center gap-1">

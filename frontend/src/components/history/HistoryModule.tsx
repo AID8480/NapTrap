@@ -8,6 +8,7 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell,
 } from "recharts";
+import { BarChart2, Trash2 } from "lucide-react";
 
 const FATIGUE_COLORS = ["#4ECDC4", "#FFE66D", "#FF6B6B", "#e74c3c"];
 const FATIGUE_LABELS = ["Fresh", "Mild", "Moderate", "Severe"];
@@ -60,7 +61,7 @@ export function HistoryModule() {
       <div className="relative z-10">
         <div className="flex items-center justify-between gap-2 mb-5">
           <div className="flex items-center gap-2">
-            <span className="text-xl">📊</span>
+            <BarChart2 className="w-5 h-5 text-lavender-dark" />
             <h2 className="font-bold text-gray-800 text-lg">Session History</h2>
           </div>
           {sessions.length > 0 && (
@@ -73,7 +74,7 @@ export function HistoryModule() {
         {confirmClear && (
           <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
             <div className="bg-white rounded-3xl clay-shadow-lg w-full max-w-sm p-6 text-center">
-              <div className="text-4xl mb-3">🗑️</div>
+            <div className="flex justify-center mb-3"><Trash2 className="w-10 h-10 text-gray-300" /></div>
               <h3 className="font-bold text-gray-800 text-lg mb-2">Clear all history?</h3>
               <p className="text-sm text-gray-500 mb-5">This will permanently delete all session records and cannot be undone.</p>
               <div className="flex gap-3">

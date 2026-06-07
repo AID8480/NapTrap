@@ -123,7 +123,12 @@ async def _process_message(raw: dict, buffer: SessionBuffer, ws: WebSocket) -> N
 @router.websocket("/ws/sensor/{user_id}")
 async def sensor_endpoint(user_id: str, ws: WebSocket):
     await manager.connect(user_id, ws)
-    buffer = await _init_buffer(user_id)
+    try:
+        buffer = await _init_buffer(user_id)
+    except Exception as e:
+        print(f"[WS] _init_buffer failed: {type(e).__name__}: {e}")
+        await ws.close()
+        return
     manager.set_buffer(user_id, buffer)
 
     try:

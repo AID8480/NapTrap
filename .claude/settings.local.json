@@ -9,7 +9,8 @@
       "Bash(grep -E \"\\\\.\\(md|txt|json\\)$\")",
       "Bash(curl:*)",
       "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

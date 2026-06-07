@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Moon } from "lucide-react";
 import { ClayCard } from "../components/ui/ClayCard";
 import { ClayButton } from "../components/ui/ClayButton";
 import { AmbientBlobs } from "../components/layout/AmbientBlobs";
@@ -42,7 +43,9 @@ export function AuthPage() {
 
       <ClayCard className="relative z-10 w-full max-w-md bg-white/80 backdrop-blur-sm p-8">
         <div className="text-center mb-8">
-          <div className="text-4xl mb-2">😴</div>
+          <div className="flex justify-center mb-2">
+            <Moon className="w-10 h-10 text-coral" />
+          </div>
           <h1 className="text-2xl font-bold text-gray-800">NapTrap</h1>
           <p className="text-gray-500 text-sm mt-1">Driver fatigue detection</p>
         </div>

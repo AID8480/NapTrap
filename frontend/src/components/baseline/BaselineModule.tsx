@@ -7,6 +7,7 @@ import type { BaselineOut } from "../../api/baseline";
 import { UploadSleepModal } from "./UploadSleepModal";
 import { MeasureNowModal } from "./MeasureNowModal";
 import { useSessionStore } from "../../store/sessionStore";
+import { Activity, Moon, Wind, Radio, Trash2 } from "lucide-react";
 
 interface Props {
   onBaselineChange?: (hasBaseline: boolean) => void;
@@ -75,7 +76,7 @@ export const BaselineModule = forwardRef<BaselineModuleHandle, Props>(function B
         ]} />
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-xl">❤️</span>
+            <Activity className="w-5 h-5 text-coral" />
             <h2 className="font-bold text-gray-800 text-lg">Baseline HRV</h2>
           </div>
 
@@ -84,7 +85,7 @@ export const BaselineModule = forwardRef<BaselineModuleHandle, Props>(function B
               <div className="text-4xl font-extrabold text-coral">{active.rmssd_value.toFixed(1)}</div>
               <div className="text-xs text-gray-500 mt-0.5">ms RMSSD</div>
               <span className="inline-block mt-2 text-xs font-semibold bg-coral/20 text-coral-dark rounded-full px-3 py-1">
-                {active.method === "sleep" ? "😴 Sleep Data" : "🧘 Resting Measurement"}
+                {active.method === "sleep" ? <><Moon className="w-3 h-3 inline mr-1" />Sleep Data</> : <><Wind className="w-3 h-3 inline mr-1" />Resting Measurement</>}
               </span>
             </div>
           ) : (
@@ -105,7 +106,7 @@ export const BaselineModule = forwardRef<BaselineModuleHandle, Props>(function B
                     }`}
                   >
                     <div className="text-lg font-bold">{b.rmssd_value.toFixed(1)}</div>
-                    <div>{b.method === "sleep" ? "😴 Sleep" : "🧘 Resting"}</div>
+                    <div>{b.method === "sleep" ? <><Moon className="w-3 h-3 inline mr-1" />Sleep</> : <><Wind className="w-3 h-3 inline mr-1" />Resting</>}</div>
                   </button>
                   <button
                     onClick={() => setConfirmDeleteId(b.id)}
@@ -151,7 +152,7 @@ export const BaselineModule = forwardRef<BaselineModuleHandle, Props>(function B
       {showNoSensor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl clay-shadow-lg w-full max-w-sm p-6 text-center">
-            <div className="text-4xl mb-3">📡</div>
+            <div className="flex justify-center mb-3"><Radio className="w-10 h-10 text-gray-300" /></div>
             <h3 className="font-bold text-gray-800 text-lg mb-2">No Sensor Detected</h3>
             <p className="text-sm text-gray-500 mb-5">Please connect a heart rate sensor before starting a resting measurement.</p>
             <ClayButton colorClass="bg-coral text-white w-full" onClick={() => setShowNoSensor(false)}>Got it</ClayButton>
@@ -163,7 +164,7 @@ export const BaselineModule = forwardRef<BaselineModuleHandle, Props>(function B
       {confirmDeleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl clay-shadow-lg w-full max-w-sm p-6 text-center">
-            <div className="text-4xl mb-3">🗑️</div>
+            <div className="flex justify-center mb-3"><Trash2 className="w-10 h-10 text-gray-300" /></div>
             <h3 className="font-bold text-gray-800 text-lg mb-2">Confirm Delete</h3>
             <p className="text-sm text-gray-500 mb-5">Are you sure you want to delete this baseline?</p>
             <div className="flex gap-3">

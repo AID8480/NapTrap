@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { Activity, Cpu } from "lucide-react";
 
 const WS_BASE = import.meta.env.VITE_WS_URL ?? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
 const MAX_RR_HISTORY = 20;
@@ -66,7 +67,7 @@ export function TestSensorModal({ onClose }: Props) {
 
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <h3 className="font-bold text-gray-800 text-lg">🔬 Test Sensor</h3>
+          <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2"><Cpu className="w-5 h-5 text-gray-600" /> Test Sensor</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
         </div>
 
@@ -91,7 +92,7 @@ export function TestSensorModal({ onClose }: Props) {
               className="text-4xl transition-transform duration-150"
               style={{ transform: beatPulse ? "scale(1.2)" : "scale(1.0)" }}
             >
-              {connected ? "❤️" : "🫀"}
+              <Activity className={`w-10 h-10 transition-colors duration-150 ${connected ? "text-red-400" : "text-gray-300"}`} />
             </span>
           </div>
         </div>

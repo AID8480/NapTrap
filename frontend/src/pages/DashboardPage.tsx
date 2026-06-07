@@ -7,6 +7,7 @@ import { LiveSessionModule } from "../components/session/LiveSessionModule";
 import { FusionModule } from "../components/fusion/FusionModule";
 import { HistoryModule } from "../components/history/HistoryModule";
 import { TestSensorModal } from "../components/session/TestSensorModal";
+import { Moon, AlertTriangle } from "lucide-react";
 import { ClayButton } from "../components/ui/ClayButton";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
@@ -43,7 +44,7 @@ export function DashboardPage() {
       <header className="sticky top-0 z-30 bg-white/70 backdrop-blur-md border-b border-white/50 px-4 py-3">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-2xl">😴</span>
+            <Moon className="w-6 h-6 text-coral" />
             <span className="font-extrabold text-gray-800 text-lg">NapTrap</span>
           </div>
           <div className="flex items-center gap-2">
@@ -90,8 +91,9 @@ export function DashboardPage() {
         {/* No-baseline warning banner */}
         {hasBaseline === false && (
           <div className="rounded-2xl bg-amber-50 border-2 border-amber-300 px-5 py-4 flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex-1 text-sm font-semibold text-amber-800">
-              ⚠️ No Baseline set yet. Please upload sleep data or perform a resting measurement first.
+            <div className="flex-1 text-sm font-semibold text-amber-800 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+            No Baseline set yet. Please upload sleep data or perform a resting measurement first.
             </div>
             <div className="flex gap-2 flex-shrink-0">
               <button

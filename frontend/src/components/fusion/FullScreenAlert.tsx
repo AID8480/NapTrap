@@ -1,12 +1,13 @@
 import { useEffect } from "react";
+import { AlertTriangle } from "lucide-react";
 import { useSessionStore } from "../../store/sessionStore";
 import { ClayButton } from "../ui/ClayButton";
 
 const ALERT_MESSAGES = [
   "You're doing great! Stay alert.",
   "Mild fatigue detected. Consider a short break.",
-  "⚠️ Moderate fatigue. Please pull over soon.",
-  "🚨 Severe fatigue! Pull over and rest immediately.",
+  "Moderate fatigue. Please pull over soon.",
+  "Severe fatigue! Pull over and rest immediately.",
 ];
 
 export function FullScreenAlert() {
@@ -33,8 +34,8 @@ export function FullScreenAlert() {
       {/* Pulsing ring */}
       <div className="relative mb-6">
         <div className="w-24 h-24 rounded-full bg-white/20 animate-pulseRing absolute inset-0" />
-        <div className="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center text-5xl relative z-10">
-          ⚠️
+        <div className="w-24 h-24 rounded-full bg-white/10 flex items-center justify-center relative z-10">
+          <AlertTriangle className="w-12 h-12 text-white" />
         </div>
       </div>
 

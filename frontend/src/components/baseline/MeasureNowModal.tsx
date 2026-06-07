@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { ClayButton } from "../ui/ClayButton";
 import { uploadBaseline } from "../../api/baseline";
 import { useAuth } from "../../hooks/useAuth";
+import { Wind } from "lucide-react";
 
 const MEASURE_DURATION = 300; // 5 minutes in seconds
 const WS_BASE = typeof window !== "undefined"
@@ -72,7 +73,7 @@ export function MeasureNowModal({ onClose }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-white rounded-3xl clay-shadow-lg w-full max-w-sm p-6 text-center">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-gray-800 text-lg">🧘 Measure Resting HRV</h3>
+          <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2"><Wind className="w-5 h-5 text-mint" /> Measure Resting HRV</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
         </div>
 

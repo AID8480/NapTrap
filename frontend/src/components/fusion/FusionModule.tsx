@@ -4,6 +4,7 @@ import { AmbientBlobs } from "../layout/AmbientBlobs";
 import { FullScreenAlert } from "./FullScreenAlert";
 import { LineChart, Line, ResponsiveContainer, Tooltip, YAxis } from "recharts";
 import { useState, useRef } from "react";
+import { Shuffle, Activity, MapPin, AlertTriangle } from "lucide-react";
 
 function InfoTooltip({ text }: { text: string }) {
   const [visible, setVisible] = useState(false);
@@ -54,8 +55,8 @@ export function FusionModule({ hasBaseline = true }: { hasBaseline?: boolean }) 
 
   let fusionStatus = "Normal";
   let fusionColor = "text-mint";
-  if (hrv_elevated && gps_elevated) { fusionStatus = "⚠️ ALERT"; fusionColor = "text-red-500"; }
-  else if (hrv_elevated || gps_elevated) { fusionStatus = "⚡ Warning"; fusionColor = "text-lemon-dark"; }
+  if (hrv_elevated && gps_elevated) { fusionStatus = "ALERT"; fusionColor = "text-red-500"; }
+  else if (hrv_elevated || gps_elevated) { fusionStatus = "Warning"; fusionColor = "text-lemon-dark"; }
 
   return (
     <>
@@ -77,11 +78,14 @@ export function FusionModule({ hasBaseline = true }: { hasBaseline?: boolean }) 
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <span className="text-xl">🔀</span>
+              <Shuffle className="w-5 h-5 text-sky-500" />
               <h2 className="font-bold text-gray-800 text-lg">Dual Signal Fusion</h2>
             </div>
             <span className="flex items-center gap-1">
-              <span className={`text-sm font-bold ${fusionColor}`}>{fusionStatus}</span>
+              <span className={`text-sm font-bold flex items-center gap-1 ${fusionColor}`}>
+                {(hrv_elevated && gps_elevated) && <AlertTriangle className="w-4 h-4" />}
+                {fusionStatus}
+              </span>
               {(hrv_elevated && gps_elevated) && (
                 <InfoTooltip text={"Both signals elevated simultaneously — physiological fatigue AND abnormal driving detected. Immediate alert triggered."} />
               )}
@@ -95,7 +99,7 @@ export function FusionModule({ hasBaseline = true }: { hasBaseline?: boolean }) 
             {/* HRV panel */}
             <div className="bg-white/60 rounded-2xl p-3">
               <div className="flex items-end justify-between mb-2">
-                <div className="text-xs font-semibold text-gray-500">❤️ HRV Signal</div>
+                <div className="flex items-center gap-1 text-xs font-semibold text-gray-500"><Activity className="w-3.5 h-3.5" /> HRV Signal</div>
                 <InfoTooltip text={"Elevated when fatigue level reaches Moderate (2) or above.\nBased on RMSSD drop ratio compared to your personal baseline."} />
               </div>
               <div className={`text-sm font-bold mb-2 ${hrv_elevated ? "text-coral" : "text-mint"}`}>
@@ -118,7 +122,7 @@ export function FusionModule({ hasBaseline = true }: { hasBaseline?: boolean }) 
             {/* GPS panel */}
             <div className="bg-white/60 rounded-2xl p-3">
               <div className="flex items-end justify-between mb-2">
-                <div className="text-xs font-semibold text-gray-500">📍 GPS Signal</div>
+                <div className="flex items-center gap-1 text-xs font-semibold text-gray-500"><MapPin className="w-3.5 h-3.5" /> GPS Signal</div>
                 <InfoTooltip text={"Elevated when speed exceeds 20 km/h during a confirmed driving session."} />
               </div>
               <div className={`text-sm font-bold mb-1 ${gps_elevated ? "text-coral" : "text-mint"}`}>
