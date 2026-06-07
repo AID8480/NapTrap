@@ -7,7 +7,6 @@ const RECONNECT_DELAY_MS = 2000;
 
 export function useWebSocket(userId: string | null, demo: boolean, token: string | null) {
   const wsRef = useRef<WebSocket | null>(null);
-  const prevDemoRef = useRef<boolean>(demo);
   const intentionalCloseRef = useRef<boolean>(false);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tokenRef = useRef<string | null>(token);
@@ -91,10 +90,7 @@ export function useWebSocket(userId: string | null, demo: boolean, token: string
   }, []);
 
   useEffect(() => {
-    const exitingDemo = prevDemoRef.current && !demo;
-    prevDemoRef.current = demo;
-
-    if (!userId || exitingDemo) return;
+    if (!userId) return;
 
     openConnection();
 
