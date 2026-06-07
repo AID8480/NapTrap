@@ -8,12 +8,33 @@ export function useWebSocket(userId: string | null, demo: boolean, hasBaseline: 
   const wsRef = useRef<WebSocket | null>(null);
   const prevDemoRef = useRef<boolean>(demo);
   const ignoringRef = useRef<boolean>(false);
+  // Keep latest token in a ref so the effect closure always reads the current value
+  // without token being a dep that triggers reconnects
+  const tokenRef = useRef<string | null>(token);
+  tokenRef.current = token;
   const store = useSessionStore();
 
-  const connect = useCallback(() => {
-    if (!userId) return;
+  const sendAck = useCallback(() => {
+    wsRef.current?.send(JSON.stringify({ type: "driving_ack" }));
+    store.setDrivingConfirmed(true);
+    store.setDrivingDetected(false);
+  }, []);
+
+  const sendDismiss = useCallback(() => {
+    wsRef.current?.send(JSON.stringify({ type: "driving_dismiss" }));
+    store.setDrivingDetected(false);
+  }, []);
+
+  useEffect(() => {
+    const exitingDemo = prevDemoRef.current && !demo;
+    prevDemoRef.current = demo;
+
+    if (!userId || exitingDemo || !hasBaseline) return;
+
     ignoringRef.current = false;
-    const path = demo ? `/ws/demo/${userId}` : `/ws/browser/${userId}?token=${encodeURIComponent(token ?? "")}`;
+    const path = demo
+      ? `/ws/demo/${userId}`
+      : `/ws/browser/${userId}?token=${encodeURIComponent(tokenRef.current ?? "")}`;
     const ws = new WebSocket(`${WS_BASE}${path}`);
     wsRef.current = ws;
 
@@ -55,32 +76,15 @@ export function useWebSocket(userId: string | null, demo: boolean, hasBaseline: 
           break;
       }
     };
-  }, [userId, demo, hasBaseline, token]);
 
-  const sendAck = useCallback(() => {
-    wsRef.current?.send(JSON.stringify({ type: "driving_ack" }));
-    store.setDrivingConfirmed(true);
-    store.setDrivingDetected(false);
-  }, []);
-
-  const sendDismiss = useCallback(() => {
-    wsRef.current?.send(JSON.stringify({ type: "driving_dismiss" }));
-    store.setDrivingDetected(false);
-  }, []);
-
-  useEffect(() => {
-    const exitingDemo = prevDemoRef.current && !demo;
-    prevDemoRef.current = demo;
-
-    if (userId && !exitingDemo && hasBaseline) connect();
     return () => {
-      // Stop processing any in-flight messages before resetting state
       ignoringRef.current = true;
-      wsRef.current?.close();
+      ws.close();
       wsRef.current = null;
       store.reset();
     };
-  }, [userId, demo, hasBaseline, token]);
+  }, [userId, demo, hasBaseline]);
 
   return { sendAck, sendDismiss };
 }
+
