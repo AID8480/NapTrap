@@ -3,46 +3,44 @@ import type { FatigueLevel } from "../store/sessionStore";
 import { useSessionStore } from "../store/sessionStore";
 
 const WS_BASE = import.meta.env.VITE_WS_URL ?? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
+const RECONNECT_DELAY_MS = 2000;
 
 export function useWebSocket(userId: string | null, demo: boolean, token: string | null) {
   const wsRef = useRef<WebSocket | null>(null);
   const prevDemoRef = useRef<boolean>(demo);
-  const ignoringRef = useRef<boolean>(false);
-  // Keep latest token in a ref so the effect closure always reads the current value
-  // without token being a dep that triggers reconnects
+  const intentionalCloseRef = useRef<boolean>(false);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tokenRef = useRef<string | null>(token);
   tokenRef.current = token;
+  const userIdRef = useRef<string | null>(userId);
+  userIdRef.current = userId;
+  const demoRef = useRef<boolean>(demo);
+  demoRef.current = demo;
   const store = useSessionStore();
 
-  const sendAck = useCallback(() => {
-    wsRef.current?.send(JSON.stringify({ type: "driving_ack" }));
-    store.setDrivingConfirmed(true);
-    store.setDrivingDetected(false);
-  }, []);
+  const openConnection = useCallback(() => {
+    const uid = userIdRef.current;
+    if (!uid) return;
+    intentionalCloseRef.current = false;
 
-  const sendDismiss = useCallback(() => {
-    wsRef.current?.send(JSON.stringify({ type: "driving_dismiss" }));
-    store.setDrivingDetected(false);
-  }, []);
-
-  useEffect(() => {
-    const exitingDemo = prevDemoRef.current && !demo;
-    prevDemoRef.current = demo;
-
-    if (!userId || exitingDemo) return;
-
-    ignoringRef.current = false;
-    const path = demo
-      ? `/ws/demo/${userId}`
-      : `/ws/browser/${userId}?token=${encodeURIComponent(tokenRef.current ?? "")}`;
+    const path = demoRef.current
+      ? `/ws/demo/${uid}`
+      : `/ws/browser/${uid}?token=${encodeURIComponent(tokenRef.current ?? "")}`;
     const ws = new WebSocket(`${WS_BASE}${path}`);
     wsRef.current = ws;
 
     ws.onopen = () => { store.setConnected(true); };
-    ws.onclose = () => { store.setConnected(false); wsRef.current = null; };
+
+    ws.onclose = () => {
+      store.setConnected(false);
+      wsRef.current = null;
+      // Reconnect unless this was an intentional cleanup close
+      if (!intentionalCloseRef.current && userIdRef.current) {
+        reconnectTimerRef.current = setTimeout(openConnection, RECONNECT_DELAY_MS);
+      }
+    };
 
     ws.onmessage = (evt) => {
-      if (ignoringRef.current) return;
       let msg: Record<string, unknown>;
       try { msg = JSON.parse(evt.data); } catch { return; }
 
@@ -76,10 +74,34 @@ export function useWebSocket(userId: string | null, demo: boolean, token: string
           break;
       }
     };
+  }, []);
+
+  const sendAck = useCallback(() => {
+    wsRef.current?.send(JSON.stringify({ type: "driving_ack" }));
+    store.setDrivingConfirmed(true);
+    store.setDrivingDetected(false);
+  }, []);
+
+  const sendDismiss = useCallback(() => {
+    wsRef.current?.send(JSON.stringify({ type: "driving_dismiss" }));
+    store.setDrivingDetected(false);
+  }, []);
+
+  useEffect(() => {
+    const exitingDemo = prevDemoRef.current && !demo;
+    prevDemoRef.current = demo;
+
+    if (!userId || exitingDemo) return;
+
+    openConnection();
 
     return () => {
-      ignoringRef.current = true;
-      ws.close();
+      intentionalCloseRef.current = true;
+      if (reconnectTimerRef.current) {
+        clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
+      wsRef.current?.close();
       wsRef.current = null;
       store.reset();
     };
