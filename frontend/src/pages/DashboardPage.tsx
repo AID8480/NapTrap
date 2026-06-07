@@ -24,7 +24,7 @@ export function DashboardPage() {
 
   useEffect(() => { setDemoMode(demo); }, [demo]);
 
-  const { sendAck, sendDismiss } = useWebSocket(user?.id ?? null, demo, hasBaseline === true, token);
+  const { sendAck, sendDismiss } = useWebSocket(user?.id ?? null, demo, token);
 
   const toggleDemo = () => {
     if (demo) {

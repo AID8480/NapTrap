@@ -4,7 +4,7 @@ import { useSessionStore } from "../store/sessionStore";
 
 const WS_BASE = import.meta.env.VITE_WS_URL ?? `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${window.location.host}`;
 
-export function useWebSocket(userId: string | null, demo: boolean, hasBaseline: boolean, token: string | null) {
+export function useWebSocket(userId: string | null, demo: boolean, token: string | null) {
   const wsRef = useRef<WebSocket | null>(null);
   const prevDemoRef = useRef<boolean>(demo);
   const ignoringRef = useRef<boolean>(false);
@@ -29,7 +29,7 @@ export function useWebSocket(userId: string | null, demo: boolean, hasBaseline: 
     const exitingDemo = prevDemoRef.current && !demo;
     prevDemoRef.current = demo;
 
-    if (!userId || exitingDemo || !hasBaseline) return;
+    if (!userId || exitingDemo) return;
 
     ignoringRef.current = false;
     const path = demo
@@ -83,7 +83,7 @@ export function useWebSocket(userId: string | null, demo: boolean, hasBaseline: 
       wsRef.current = null;
       store.reset();
     };
-  }, [userId, demo, hasBaseline]);
+  }, [userId, demo]);
 
   return { sendAck, sendDismiss };
 }
