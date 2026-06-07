@@ -147,6 +147,13 @@ async def browser_endpoint(user_id: str, ws: WebSocket, token: str = Query(...))
         return
     await manager.connect_browser(user_id, ws)
     print(f"[WS/browser] {user_id} connected, entering loop")
+
+    # If ESP32 already connected and sent data, catch browser up immediately
+    buffer = manager.get_buffer(user_id)
+    if buffer and buffer.sensor_connected:
+        await ws.send_json({"type": "sensor_connected", "sensor_model": None})
+        print(f"[WS/browser] {user_id} replayed sensor_connected (already active)")
+
     try:
         while True:
             raw = await ws.receive_json()

@@ -53,6 +53,7 @@ class ConnectionManager:
 
     async def send_to_browser(self, user_id: str, data: dict) -> None:
         ws = self._browser.get(user_id)
+        print(f"[manager] send_to_browser user={user_id} type={data.get('type')} ws={'yes' if ws else 'NO'}")
         if ws:
             try:
                 await ws.send_json(data)
