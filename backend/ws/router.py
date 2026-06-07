@@ -126,6 +126,7 @@ async def sensor_endpoint(user_id: str, ws: WebSocket):
     except WebSocketDisconnect:
         pass
     finally:
+        await manager.send_to_browser(user_id, {"type": "sensor_disconnected"})
         await _finalize(buffer)
         manager.disconnect_hardware(user_id)
 

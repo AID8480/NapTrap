@@ -34,6 +34,7 @@ interface SessionState {
   // Actions
   setConnected: (v: boolean) => void;
   setSensorConnected: (model: string | null) => void;
+  setSensorDisconnected: () => void;
   setDemoMode: (v: boolean) => void;
   pushRR: (rmssd: number, fatigue: FatigueLevel, t: number) => void;
   pushGPS: (speed: number, lat: number, lng: number) => void;
@@ -65,6 +66,7 @@ export const useSessionStore = create<SessionState>((set) => ({
 
   setConnected: (v) => set({ connected: v }),
   setSensorConnected: (model) => set({ sensorConnected: true, sensorModel: model }),
+  setSensorDisconnected: () => set({ sensorConnected: false, sensorModel: null }),
   setDemoMode: (v) => set({ demoMode: v }),
 
   pushRR: (rmssd, fatigue, t) =>

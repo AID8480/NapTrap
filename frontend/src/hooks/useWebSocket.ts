@@ -48,6 +48,9 @@ export function useWebSocket(userId: string | null, demo: boolean, token: string
         case "sensor_connected":
           store.setSensorConnected((msg.sensor_model as string | null) ?? null);
           break;
+        case "sensor_disconnected":
+          store.setSensorDisconnected();
+          break;
         case "hrv_update":
           store.pushRR(
             msg.rmssd as number,
