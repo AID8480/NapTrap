@@ -1,4 +1,5 @@
 import asyncio
+import json
 import time
 import uuid
 
@@ -156,14 +157,21 @@ async def browser_endpoint(user_id: str, ws: WebSocket, token: str = Query(...))
 
     try:
         while True:
-            raw = await ws.receive_json()
-            msg_type = raw.get("type")
-            buffer = manager.get_buffer(user_id)
-            if msg_type == "driving_ack" and buffer:
-                buffer.driving_confirmed = True
-                await ws.send_json({"type": "monitoring_started"})
-            elif msg_type == "driving_dismiss" and buffer:
-                buffer.driving_dismissed_until = int(time.time() * 1000) + 5 * 60 * 1000
+            try:
+                raw_text = await asyncio.wait_for(ws.receive_text(), timeout=30.0)
+                try:
+                    raw = json.loads(raw_text)
+                except Exception:
+                    continue
+                msg_type = raw.get("type")
+                buf = manager.get_buffer(user_id)
+                if msg_type == "driving_ack" and buf:
+                    buf.driving_confirmed = True
+                    await ws.send_json({"type": "monitoring_started"})
+                elif msg_type == "driving_dismiss" and buf:
+                    buf.driving_dismissed_until = int(time.time() * 1000) + 5 * 60 * 1000
+            except asyncio.TimeoutError:
+                await ws.send_json({"type": "ping"})
     except WebSocketDisconnect as e:
         print(f"[WS/browser] {user_id} disconnected: code={e.code}")
     except Exception as e:
