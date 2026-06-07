@@ -25,7 +25,7 @@ export function TestSensorModal({ onClose }: Props) {
     const ws = new WebSocket(`${WS_BASE}/ws/test/${userId}`);
     wsRef.current = ws;
 
-    ws.onopen = () => setConnected(true);
+    ws.onopen = () => {};
     ws.onclose = () => setConnected(false);
 
     ws.onmessage = (evt) => {
@@ -34,6 +34,7 @@ export function TestSensorModal({ onClose }: Props) {
 
       if (msg.type === "rr_ack") {
         const value = msg.value as number;
+        setConnected(true);
         setLastRR(value);
         setRrHistory((prev) => [...prev.slice(-MAX_RR_HISTORY + 1), value]);
         setBeatPulse(true);
