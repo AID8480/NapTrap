@@ -146,6 +146,7 @@ async def browser_endpoint(user_id: str, ws: WebSocket, token: str = Query(...))
         await ws.close(code=4001)
         return
     await manager.connect_browser(user_id, ws)
+    print(f"[WS/browser] {user_id} connected, entering loop")
     try:
         while True:
             raw = await ws.receive_json()
@@ -156,13 +157,14 @@ async def browser_endpoint(user_id: str, ws: WebSocket, token: str = Query(...))
                 await ws.send_json({"type": "monitoring_started"})
             elif msg_type == "driving_dismiss" and buffer:
                 buffer.driving_dismissed_until = int(time.time() * 1000) + 5 * 60 * 1000
-    except WebSocketDisconnect:
-        pass
+    except WebSocketDisconnect as e:
+        print(f"[WS/browser] {user_id} disconnected: code={e.code}")
     except Exception as e:
-        print(f"[WS/browser] error: {type(e).__name__}: {e}")
+        print(f"[WS/browser] {user_id} error: {type(e).__name__}: {e}")
         import traceback
         traceback.print_exc()
     finally:
+        print(f"[WS/browser] {user_id} cleanup")
         manager.disconnect_browser(user_id)
 
 
