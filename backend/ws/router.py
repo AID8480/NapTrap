@@ -64,15 +64,6 @@ async def _process_message(raw: dict, buffer: SessionBuffer) -> None:
         value = float(raw.get("value", 0))
         timestamp = int(raw.get("timestamp", 0))
 
-        # Notify browser on first RR packet (sensor physically connected)
-        if not buffer.sensor_connected:
-            buffer.sensor_connected = True
-            sensor_model = raw.get("sensor_model") or None
-            await manager.send_to_browser(buffer.user_id, {
-                "type": "sensor_connected",
-                "sensor_model": sensor_model,
-            })
-
         hrv_update = pipeline_runner.handle_rr(buffer, value, timestamp)
 
         # Forward raw RR + HRV update to test modal if open
@@ -125,6 +116,9 @@ async def sensor_endpoint(user_id: str, ws: WebSocket):
         return
     manager.set_buffer(user_id, buffer)
 
+    # Notify browser immediately when ESP32 hardware connects
+    await manager.send_to_browser(user_id, {"type": "sensor_connected", "sensor_model": None})
+
     try:
         while True:
             raw = await ws.receive_json()
@@ -149,9 +143,9 @@ async def browser_endpoint(user_id: str, ws: WebSocket, token: str = Query(...))
     await manager.connect_browser(user_id, ws)
     print(f"[WS/browser] {user_id} connected, entering loop")
 
-    # If ESP32 already connected and sent data, catch browser up immediately
+    # If ESP32 already connected, catch browser up immediately
     buffer = manager.get_buffer(user_id)
-    if buffer and buffer.sensor_connected:
+    if buffer:
         await ws.send_json({"type": "sensor_connected", "sensor_model": None})
         print(f"[WS/browser] {user_id} replayed sensor_connected (already active)")
 
