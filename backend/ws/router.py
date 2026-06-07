@@ -158,6 +158,10 @@ async def browser_endpoint(user_id: str, ws: WebSocket, token: str = Query(...))
                 buffer.driving_dismissed_until = int(time.time() * 1000) + 5 * 60 * 1000
     except WebSocketDisconnect:
         pass
+    except Exception as e:
+        print(f"[WS/browser] error: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
     finally:
         manager.disconnect_browser(user_id)
 
