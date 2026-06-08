@@ -7,8 +7,8 @@ const RECONNECT_DELAY_MS = 2000;
 
 export function useWebSocket(userId: string | null, demo: boolean, token: string | null) {
   const wsRef = useRef<WebSocket | null>(null);
-  const intentionalCloseRef = useRef<boolean>(false);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cleanupRef = useRef<(() => void) | null>(null);
   const tokenRef = useRef<string | null>(token);
   tokenRef.current = token;
   const userIdRef = useRef<string | null>(userId);
@@ -20,7 +20,9 @@ export function useWebSocket(userId: string | null, demo: boolean, token: string
   const openConnection = useCallback(() => {
     const uid = userIdRef.current;
     if (!uid) return;
-    intentionalCloseRef.current = false;
+
+    // Per-connection flag — immune to shared-ref race conditions
+    let closedIntentionally = false;
 
     const path = demoRef.current
       ? `/ws/demo/${uid}`
@@ -32,14 +34,14 @@ export function useWebSocket(userId: string | null, demo: boolean, token: string
 
     ws.onclose = () => {
       store.setConnected(false);
-      wsRef.current = null;
-      // Reconnect unless this was an intentional cleanup close
-      if (!intentionalCloseRef.current && userIdRef.current) {
+      if (wsRef.current === ws) wsRef.current = null;
+      if (!closedIntentionally && userIdRef.current) {
         reconnectTimerRef.current = setTimeout(openConnection, RECONNECT_DELAY_MS);
       }
     };
 
     ws.onmessage = (evt) => {
+      if (closedIntentionally) return;
       let msg: Record<string, unknown>;
       try { msg = JSON.parse(evt.data); } catch { return; }
 
@@ -76,6 +78,12 @@ export function useWebSocket(userId: string | null, demo: boolean, token: string
           break;
       }
     };
+
+    // Expose a way for cleanup to close THIS specific connection
+    cleanupRef.current = () => {
+      closedIntentionally = true;
+      ws.close();
+    };
   }, []);
 
   const sendAck = useCallback(() => {
@@ -95,12 +103,12 @@ export function useWebSocket(userId: string | null, demo: boolean, token: string
     openConnection();
 
     return () => {
-      intentionalCloseRef.current = true;
       if (reconnectTimerRef.current) {
         clearTimeout(reconnectTimerRef.current);
         reconnectTimerRef.current = null;
       }
-      wsRef.current?.close();
+      cleanupRef.current?.();
+      cleanupRef.current = null;
       wsRef.current = null;
       store.reset();
     };
