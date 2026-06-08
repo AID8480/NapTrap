@@ -91,8 +91,6 @@ export const useSessionStore = create<SessionState>((set) => ({
   reset: () =>
     set({
       connected: false,
-      sensorConnected: false,
-      sensorModel: null,
       sessionId: null,
       rmssdHistory: [],
       currentRmssd: null,
