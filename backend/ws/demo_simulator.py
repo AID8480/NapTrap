@@ -26,7 +26,7 @@ _PHASE_SEC = [60.0, 60.0, 60.0]
 # Base cruise speed — fatigue makes it erratic, not slower
 _BASE_SPEED = 72.0
 # Speed std-dev (km/h) per fatigue level — higher = more erratic
-_SPEED_NOISE = [3.0, 7.0, 14.0, 22.0]
+_SPEED_NOISE = [2.0, 4.0, 7.0, 10.0]
 # Lateral drift std-dev (degrees) per fatigue level
 # 0.00003° ≈ 3 m (normal lane), 0.0005° ≈ 55 m (severe swerve)
 _LATERAL_NOISE = [0.00003, 0.00008, 0.00020, 0.00050]
