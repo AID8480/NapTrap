@@ -23,15 +23,16 @@ export function MeasureNowModal({ onClose }: Props) {
 
   useEffect(() => {
     if (!user) return;
-    const ws = new WebSocket(`${WS_BASE}/ws/sensor/${user.id}`);
+    const ws = new WebSocket(`${WS_BASE}/ws/test/${user.id}`);
     wsRef.current = ws;
 
     ws.onmessage = (evt) => {
       const msg = JSON.parse(evt.data);
-      if (msg.type === "hrv_update") {
+      if (msg.type === "rr_ack") {
+        setRrCount((c) => c + 1);
+      } else if (msg.type === "hrv_update") {
         setRmssd(msg.rmssd);
         rmssdRef.current = msg.rmssd;
-        setRrCount((c) => c + 1);
       }
     };
 
