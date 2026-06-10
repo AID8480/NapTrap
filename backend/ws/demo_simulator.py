@@ -23,8 +23,13 @@ _DROP_BY_LEVEL = [0.05, 0.18, 0.32, 0.45]
 # Duration (seconds) of phases 0 / 1 / 2; phase 3 runs until disconnect
 _PHASE_SEC = [60.0, 60.0, 60.0]
 
-# GPS cruise speed (km/h) for each phase
-_SPEED_BY_LEVEL = [45.0, 65.0, 85.0, 100.0]
+# Base cruise speed — fatigue makes it erratic, not slower
+_BASE_SPEED = 72.0
+# Speed std-dev (km/h) per fatigue level — higher = more erratic
+_SPEED_NOISE = [3.0, 7.0, 14.0, 22.0]
+# Lateral drift std-dev (degrees) per fatigue level
+# 0.00003° ≈ 3 m (normal lane), 0.0005° ≈ 55 m (severe swerve)
+_LATERAL_NOISE = [0.00003, 0.00008, 0.00020, 0.00050]
 
 _HRV_INTERVAL = 3.0   # seconds between hrv_update packets
 _GPS_INTERVAL = 1.0   # seconds between gps_update packets
@@ -53,11 +58,11 @@ class DemoSimulator:
 
     def _gps_for(self, level: int, elapsed: float) -> tuple:
         speed = round(
-            max(0.0, _SPEED_BY_LEVEL[level] + float(np.random.normal(0, 0.4))), 1
+            max(0.0, _BASE_SPEED + float(np.random.normal(0, _SPEED_NOISE[level]))), 1
         )
         drift = elapsed * 0.00001
-        lat = round(_BASE_LAT + drift + float(np.random.normal(0, 0.00002)), 6)
-        lng = round(_BASE_LNG + drift + float(np.random.normal(0, 0.00002)), 6)
+        lat = round(_BASE_LAT + drift + float(np.random.normal(0, _LATERAL_NOISE[level])), 6)
+        lng = round(_BASE_LNG + drift + float(np.random.normal(0, _LATERAL_NOISE[level])), 6)
         return speed, lat, lng
 
     # ------------------------------------------------------------------
