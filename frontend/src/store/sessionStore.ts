@@ -36,7 +36,8 @@ interface SessionState {
   setSensorConnected: (model: string | null) => void;
   setSensorDisconnected: () => void;
   setDemoMode: (v: boolean) => void;
-  pushRR: (rmssd: number, fatigue: FatigueLevel, t: number) => void;
+  pushRR: (rmssd: number, fatigue: FatigueLevel, t: number, appendHistory?: boolean) => void;
+  stopSession: () => void;
   pushGPS: (speed: number, lat: number, lng: number) => void;
   setDrivingDetected: (v: boolean) => void;
   setDrivingConfirmed: (v: boolean) => void;
@@ -69,14 +70,13 @@ export const useSessionStore = create<SessionState>((set) => ({
   setSensorDisconnected: () => set({ sensorConnected: false, sensorModel: null }),
   setDemoMode: (v) => set({ demoMode: v }),
 
-  pushRR: (rmssd, fatigue, t) =>
+  pushRR: (rmssd, fatigue, t, appendHistory = true) =>
     set((s) => ({
       currentRmssd: rmssd,
       currentFatigue: fatigue,
-      rmssdHistory: [
-        ...s.rmssdHistory.slice(-MAX_HISTORY + 1),
-        { t, v: rmssd },
-      ],
+      ...(appendHistory ? {
+        rmssdHistory: [...s.rmssdHistory.slice(-MAX_HISTORY + 1), { t, v: rmssd }],
+      } : {}),
     })),
 
   pushGPS: (speed, lat, lng) =>
@@ -87,6 +87,16 @@ export const useSessionStore = create<SessionState>((set) => ({
 
   triggerAlert: (level) => set({ alertActive: true, alertFatigueLevel: level }),
   dismissAlert: () => set({ alertActive: false }),
+
+  stopSession: () =>
+    set({
+      drivingConfirmed: false,
+      rmssdHistory: [],
+      currentRmssd: null,
+      currentFatigue: 0,
+      alertActive: false,
+      alertFatigueLevel: 0,
+    }),
 
   reset: () =>
     set({

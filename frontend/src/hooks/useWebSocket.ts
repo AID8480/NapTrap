@@ -57,6 +57,7 @@ export function useWebSocket(userId: string | null, demo: boolean, token: string
             msg.rmssd as number,
             msg.fatigue as FatigueLevel,
             msg.timestamp as number,
+            useSessionStore.getState().drivingConfirmed,
           );
           break;
         case "gps_update":
