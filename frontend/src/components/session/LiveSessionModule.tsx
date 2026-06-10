@@ -5,7 +5,6 @@ import { AmbientBlobs } from "../layout/AmbientBlobs";
 import { FatigueRing } from "./FatigueRing";
 import { DrivingDetectionPopup } from "./DrivingDetectionPopup";
 import { Car, Radio } from "lucide-react";
-import { ClayButton } from "../ui/ClayButton";
 
 const FATIGUE_COLORS = ["#4ECDC4", "#FFE66D", "#FF6B6B", "#e74c3c"];
 const FATIGUE_LABELS = ["Fresh", "Mild fatigue", "Moderate fatigue", "Severe fatigue"];
@@ -13,7 +12,7 @@ const FATIGUE_LABELS = ["Fresh", "Mild fatigue", "Moderate fatigue", "Severe fat
 interface Props { onAck: () => void; onDismiss: () => void; hasBaseline?: boolean; }
 
 export function LiveSessionModule({ onAck, onDismiss, hasBaseline = true }: Props) {
-  const { connected, sensorConnected, sensorModel, currentRmssd, currentFatigue, drivingDetected, drivingConfirmed, stopSession } = useSessionStore();
+  const { connected, sensorConnected, sensorModel, currentRmssd, currentFatigue, drivingDetected, drivingConfirmed } = useSessionStore();
   const [showSensorToast, setShowSensorToast] = useState(false);
 
   // Show toast when sensor first connects
@@ -107,25 +106,6 @@ export function LiveSessionModule({ onAck, onDismiss, hasBaseline = true }: Prop
                 <p className="text-xs text-gray-400 mt-2">
                   Connect your sensor or enable demo mode to start monitoring.
                 </p>
-              )}
-
-              {connected && sensorConnected && !drivingConfirmed && (
-                <ClayButton
-                  colorClass="bg-mint text-white mt-3"
-                  onClick={onAck}
-                >
-                  Start Monitoring
-                </ClayButton>
-              )}
-
-              {drivingConfirmed && (
-                <ClayButton
-                  variant="ghost"
-                  className="mt-3 text-xs text-gray-400"
-                  onClick={stopSession}
-                >
-                  Stop Session
-                </ClayButton>
               )}
             </div>
           </div>

@@ -24,7 +24,7 @@ _DROP_BY_LEVEL = [0.05, 0.18, 0.32, 0.45]
 _PHASE_SEC = [60.0, 60.0, 60.0]
 
 # GPS cruise speed (km/h) for each phase
-_SPEED_BY_LEVEL = [5.0, 15.0, 22.0, 25.0]
+_SPEED_BY_LEVEL = [45.0, 65.0, 85.0, 100.0]
 
 _HRV_INTERVAL = 3.0   # seconds between hrv_update packets
 _GPS_INTERVAL = 1.0   # seconds between gps_update packets
@@ -71,7 +71,7 @@ class DemoSimulator:
         so _finalize() records correct session stats.
         """
         # 1. Brief pause, then show the driving-detection popup
-        await asyncio.sleep(2.0)
+        await asyncio.sleep(10.0)
         await send_json({"type": "driving_detected"})
 
         # 2. Auto-confirm driving 3 seconds later (simulates user clicking OK)
