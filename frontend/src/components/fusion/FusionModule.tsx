@@ -6,7 +6,7 @@ import { LineChart, Line, ResponsiveContainer, Tooltip, YAxis } from "recharts";
 import { useState, useRef } from "react";
 import { Shuffle, Activity, MapPin, AlertTriangle } from "lucide-react";
 
-function InfoTooltip({ text }: { text: string }) {
+function InfoTooltip({ text, placement = "top" }: { text: string; placement?: "top" | "bottom" }) {
   const [visible, setVisible] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -29,7 +29,10 @@ function InfoTooltip({ text }: { text: string }) {
       </span>
       <span
         className={`
-          pointer-events-none absolute z-50 bottom-[calc(100%+6px)] right-0
+          pointer-events-none absolute z-50 right-0
+          ${placement === "top"
+            ? "bottom-[calc(100%+6px)]"
+            : "top-[calc(100%+6px)]"}
           w-[220px] rounded-xl bg-gray-800/95 text-white text-[11px] leading-[1.5]
           px-3 py-2 shadow-lg
           transition-opacity duration-200
@@ -38,7 +41,7 @@ function InfoTooltip({ text }: { text: string }) {
         style={{ whiteSpace: "pre-line" }}
       >
         {text}
-        <span className="absolute bottom-[-5px] right-3 w-2.5 h-2.5 bg-gray-800/95 rotate-45" />
+        <span className={`absolute ${placement === "top" ? "bottom-[-5px]" : "top-[-5px]"} right-3 w-2.5 h-2.5 bg-gray-800/95 rotate-45`} />
       </span>
     </span>
   );
@@ -87,10 +90,10 @@ export function FusionModule({ hasBaseline = true }: { hasBaseline?: boolean }) 
                 {fusionStatus}
               </span>
               {(hrv_elevated && gps_elevated) && (
-                <InfoTooltip text={"Both signals elevated simultaneously — physiological fatigue AND abnormal driving detected. Immediate alert triggered."} />
+                <InfoTooltip placement="bottom" text={"Both signals elevated simultaneously — physiological fatigue AND abnormal driving detected. Immediate alert triggered."} />
               )}
               {(hrv_elevated || gps_elevated) && !(hrv_elevated && gps_elevated) && (
-                <InfoTooltip text={"One signal elevated — either HRV fatigue level reached 2+ or abnormal driving behavior detected. Logged but no alert triggered."} />
+                <InfoTooltip placement="bottom" text={"One signal elevated — either HRV fatigue level reached 2+ or abnormal driving behavior detected. Logged but no alert triggered."} />
               )}
             </span>
           </div>
