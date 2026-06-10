@@ -121,9 +121,14 @@ async def sensor_endpoint(user_id: str, ws: WebSocket):
 
     try:
         while True:
-            raw = await ws.receive_json()
+            try:
+                raw = await asyncio.wait_for(ws.receive_json(), timeout=20.0)
+            except asyncio.TimeoutError:
+                # No data for 20s — probe the connection; raises if ESP32 is gone
+                await ws.send_json({"type": "ping"})
+                continue
             await _process_message(raw, buffer)
-    except WebSocketDisconnect:
+    except (WebSocketDisconnect, Exception):
         pass
     finally:
         await _finalize(buffer)
