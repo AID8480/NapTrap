@@ -126,9 +126,12 @@ async def sensor_endpoint(user_id: str, ws: WebSocket):
     except WebSocketDisconnect:
         pass
     finally:
-        await manager.send_to_browser(user_id, {"type": "sensor_disconnected"})
         await _finalize(buffer)
         manager.disconnect_hardware(user_id)
+        # Grace period: if ESP32 reconnects within 3s, suppress sensor_disconnected flicker
+        await asyncio.sleep(3)
+        if not manager.get_buffer(user_id):
+            await manager.send_to_browser(user_id, {"type": "sensor_disconnected"})
 
 
 @router.websocket("/ws/browser/{user_id}")
